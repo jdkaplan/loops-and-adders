@@ -13,7 +13,7 @@ It's essentially the [round-robin][round-robin] story game applied to programmin
 # Turn Order
 
 * [@jdkaplan](https://github.com/jdkaplan)
-* This could be you!  Contact someone else in the list.
+* @carlsverre
 
 # Dev Notes
 
