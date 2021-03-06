@@ -14,6 +14,7 @@ It's essentially the [round-robin][round-robin] story game applied to programmin
 
 * [@jdkaplan](https://github.com/jdkaplan)
 * @carlsverre
+* This could be you!  Contact someone else in the list.
 
 # Dev Notes
 
