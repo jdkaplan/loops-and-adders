@@ -7,4 +7,6 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nannou = "0.15"
+# We need this commit to be able to quit the app programmatically:
+# 2fc3977aae16bcb939e7499a2c21cbab2617d4b1
+nannou = { git = "https://github.com/nannou-org/nannou" }

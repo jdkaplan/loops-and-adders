@@ -1,6 +1,10 @@
 use nannou::prelude::*;
 use std::cmp;
 
+const FPS: u64 = 60;
+const RUNTIME_SECONDS: u64 = 60;
+const NUM_FRAMES: u64 = FPS * RUNTIME_SECONDS;
+
 fn main() {
     nannou::app(model).update(update).simple_window(view).run();
 }
@@ -31,6 +35,10 @@ fn model(_app: &App) -> Model {
 }
 
 fn update(app: &App, model: &mut Model, _update: Update) {
+    if app.elapsed_frames() > NUM_FRAMES {
+        return app.quit();
+    }
+
     let rate = app.time.sin();
 
     // spin the object
