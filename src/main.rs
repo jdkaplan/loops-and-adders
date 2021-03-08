@@ -1,12 +1,21 @@
 use nannou::prelude::*;
 use std::cmp;
+use std::fs;
 
 const FPS: u64 = 60;
 const RUNTIME_SECONDS: u64 = 60;
 const NUM_FRAMES: u64 = FPS * RUNTIME_SECONDS;
 
+const OUTPUT_DIR: &'static str = "output/frames";
+
 fn main() {
-    nannou::app(model).update(update).simple_window(view).run();
+    fs::remove_dir_all(OUTPUT_DIR).expect("Could not remove output dir");
+
+    nannou::app(model)
+        .update(update)
+        .simple_window(view)
+        .size(1000, 1000)
+        .run();
 }
 
 struct Model {
@@ -24,7 +33,9 @@ struct Model {
     stripe_spacing: f32,
 }
 
-fn model(_app: &App) -> Model {
+fn model(app: &App) -> Model {
+    app.set_loop_mode(LoopMode::rate_fps(FPS as f64));
+
     Model {
         rot: 0.,
         clones: 0,
@@ -106,4 +117,17 @@ fn view(app: &App, model: &Model, frame: Frame) {
     }
 
     draw.to_frame(app, &frame).unwrap();
+
+    // Capture the frame for stitching together later.
+    let file_path = captured_frame_path(app, &frame);
+    app.main_window().capture_frame(file_path);
+}
+
+fn captured_frame_path(app: &App, frame: &Frame) -> std::path::PathBuf {
+    app.project_path()
+        .expect("failed to locate `project_path`")
+        .join(OUTPUT_DIR)
+        // Use the frame number the a filename.
+        .join(frame.nth().to_string())
+        .with_extension("png")
 }
