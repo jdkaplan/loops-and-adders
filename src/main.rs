@@ -15,6 +15,9 @@ struct Model {
 
     // spawn rate
     spawn_rate: i32,
+
+    stripe_color: Hsl,
+    stripe_spacing: f32,
 }
 
 fn model(_app: &App) -> Model {
@@ -22,6 +25,8 @@ fn model(_app: &App) -> Model {
         rot: 0.,
         clones: 0,
         spawn_rate: 1,
+        stripe_color: hsl(40., 0.1, 0.1),
+        stripe_spacing: 0.,
     }
 }
 
@@ -40,11 +45,39 @@ fn update(app: &App, model: &mut Model, _update: Update) {
     } else if model.clones == 0 {
         model.spawn_rate = 1;
     }
+
+    model.stripe_color = hsl((app.time / 30.) % 360., 1., 0.2);
+    model.stripe_spacing = triangle(10., 15., app.time);
+}
+
+fn triangle(amplitude: f32, period: f32, t: f32) -> f32 {
+    amplitude * ((t + period / 2.) % period - period / 2.).abs()
 }
 
 fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
     draw.background().color(BLACK);
+
+    // Stripes!
+    for i in -5..6 {
+        draw.rect()
+            .color(model.stripe_color)
+            .rotate(PI / 4.)
+            .w_h(100., 5.)
+            .x_y(
+                (i as f32) * model.stripe_spacing,
+                -(i as f32) * model.stripe_spacing,
+            );
+
+        draw.rect()
+            .color(model.stripe_color)
+            .rotate(-PI / 4.)
+            .w_h(100., 5.)
+            .x_y(
+                (i as f32) * model.stripe_spacing,
+                (i as f32) * model.stripe_spacing,
+            );
+    }
 
     let size = 20.;
 
