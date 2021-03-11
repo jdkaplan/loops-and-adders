@@ -2,7 +2,6 @@ use nannou::prelude::*;
 use std::cmp;
 use std::fs;
 
-const FPS: u64 = 60;
 const RUNTIME_SECONDS: u64 = 60;
 const NUM_FRAMES: u64 = FPS * RUNTIME_SECONDS;
 
@@ -34,7 +33,7 @@ struct Model {
 }
 
 fn model(app: &App) -> Model {
-    app.set_loop_mode(LoopMode::rate_fps(FPS as f64));
+    app.set_loop_mode(LoopMode::rate_fps(60.));
 
     Model {
         rot: 0.,
