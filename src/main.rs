@@ -1,14 +1,30 @@
 use core::time;
 use std::cmp;
 use std::fs;
+use std::path;
 
 use nannou::prelude::*;
+
+use humantime::parse_duration;
+use structopt::StructOpt;
 
 const RUNTIME_SECONDS: u64 = 60;
 
 const OUTPUT_DIR: &'static str = "output/frames";
 
+#[derive(Debug, StructOpt)]
+struct Opt {
+    #[structopt(long, parse(try_from_str = parse_duration))]
+    runtime: Option<time::Duration>,
+
+    #[structopt(long, parse(from_os_str))]
+    output_path: Option<path::PathBuf>,
+}
+
 fn main() {
+    let opts = Opt::from_args();
+    println!("{:?}", opts);
+
     fs::remove_dir_all(OUTPUT_DIR).expect("Could not remove output dir");
 
     nannou::app(model)
