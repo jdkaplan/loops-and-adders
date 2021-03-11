@@ -1,9 +1,10 @@
-use nannou::prelude::*;
+use core::time;
 use std::cmp;
 use std::fs;
 
+use nannou::prelude::*;
+
 const RUNTIME_SECONDS: u64 = 60;
-const NUM_FRAMES: u64 = FPS * RUNTIME_SECONDS;
 
 const OUTPUT_DIR: &'static str = "output/frames";
 
@@ -18,6 +19,8 @@ fn main() {
 }
 
 struct Model {
+    runtime: Option<time::Duration>,
+
     // rotation of the object
     // [0, 2PI]
     rot: f32,
@@ -36,6 +39,7 @@ fn model(app: &App) -> Model {
     app.set_loop_mode(LoopMode::rate_fps(60.));
 
     Model {
+        runtime: Some(time::Duration::new(RUNTIME_SECONDS, 0)), // TODO: How do I get a CLI arg here?
         rot: 0.,
         clones: 0,
         spawn_rate: 1,
@@ -44,9 +48,11 @@ fn model(app: &App) -> Model {
     }
 }
 
-fn update(app: &App, model: &mut Model, _update: Update) {
-    if app.elapsed_frames() > NUM_FRAMES {
-        return app.quit();
+fn update(app: &App, model: &mut Model, update: Update) {
+    if let Some(runtime) = model.runtime {
+        if update.since_start > runtime {
+            return app.quit();
+        }
     }
 
     let rate = app.time.sin();
