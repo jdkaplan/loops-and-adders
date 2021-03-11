@@ -1,8 +1,11 @@
 build:
 	cargo run --release
 
+deps:
+	cargo install cargo-watch
+
 watch:
-	fd . | entr -cr cargo run
+	cargo-watch -x run
 
 video: build stitch
 
