@@ -25,7 +25,8 @@ fn main() {
     let opts = Opt::from_args();
     println!("{:?}", opts);
 
-    fs::remove_dir_all(OUTPUT_DIR).expect("Could not remove output dir");
+    fs::remove_dir_all(OUTPUT_DIR).unwrap_or_else(|_| println!("Could not remove output dir"));
+    fs::create_dir_all(OUTPUT_DIR).expect("Could not create output dir");
 
     nannou::app(model)
         .update(update)
