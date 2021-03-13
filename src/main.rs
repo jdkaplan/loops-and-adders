@@ -1,11 +1,43 @@
-use nannou::prelude::*;
+use core::time;
 use std::cmp;
+use std::fs;
+use std::path;
+
+use nannou::prelude::*;
+
+use humantime::parse_duration;
+use structopt::StructOpt;
+
+const RUNTIME_SECONDS: u64 = 60;
+
+const OUTPUT_DIR: &'static str = "output/frames";
+
+#[derive(Debug, StructOpt)]
+struct Opt {
+    #[structopt(long, parse(try_from_str = parse_duration))]
+    runtime: Option<time::Duration>,
+
+    #[structopt(long, parse(from_os_str))]
+    output_path: Option<path::PathBuf>,
+}
 
 fn main() {
-    nannou::app(model).update(update).simple_window(view).run();
+    let opts = Opt::from_args();
+    println!("{:?}", opts);
+
+    fs::remove_dir_all(OUTPUT_DIR).unwrap_or_else(|_| println!("Could not remove output dir"));
+    fs::create_dir_all(OUTPUT_DIR).expect("Could not create output dir");
+
+    nannou::app(model)
+        .update(update)
+        .simple_window(view)
+        .size(1000, 1000)
+        .run();
 }
 
 struct Model {
+    runtime: Option<time::Duration>,
+
     // rotation of the object
     // [0, 2PI]
     rot: f32,
@@ -20,8 +52,11 @@ struct Model {
     stripe_spacing: f32,
 }
 
-fn model(_app: &App) -> Model {
+fn model(app: &App) -> Model {
+    app.set_loop_mode(LoopMode::rate_fps(60.));
+
     Model {
+        runtime: Some(time::Duration::new(RUNTIME_SECONDS, 0)), // TODO: How do I get a CLI arg here?
         rot: 0.,
         clones: 0,
         spawn_rate: 1,
@@ -30,7 +65,13 @@ fn model(_app: &App) -> Model {
     }
 }
 
-fn update(app: &App, model: &mut Model, _update: Update) {
+fn update(app: &App, model: &mut Model, update: Update) {
+    if let Some(runtime) = model.runtime {
+        if update.since_start > runtime {
+            return app.quit();
+        }
+    }
+
     let rate = app.time.sin();
 
     // spin the object
@@ -98,4 +139,17 @@ fn view(app: &App, model: &Model, frame: Frame) {
     }
 
     draw.to_frame(app, &frame).unwrap();
+
+    // Capture the frame for stitching together later.
+    let file_path = captured_frame_path(app, &frame);
+    app.main_window().capture_frame(file_path);
+}
+
+fn captured_frame_path(app: &App, frame: &Frame) -> std::path::PathBuf {
+    app.project_path()
+        .expect("failed to locate `project_path`")
+        .join(OUTPUT_DIR)
+        // Use the frame number the a filename.
+        .join(frame.nth().to_string())
+        .with_extension("png")
 }
