@@ -12,7 +12,7 @@ args = [
     'run',
 	'--release',
 	'--',
-	'--runtime', '30s',
+	'--duration', '30s',
 	'--output-path', 'output/frames',
 ]
 
