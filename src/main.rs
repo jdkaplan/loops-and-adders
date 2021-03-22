@@ -147,5 +147,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
 }
 
 fn captured_frame_path(dir: &path::PathBuf, frame: &Frame) -> std::path::PathBuf {
-    dir.join(frame.nth().to_string()).with_extension("png")
+    dir.join("frames")
+        .join(frame.nth().to_string())
+        .with_extension("png")
 }
