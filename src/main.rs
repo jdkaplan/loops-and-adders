@@ -8,26 +8,16 @@ use nannou::prelude::*;
 use humantime::parse_duration;
 use structopt::StructOpt;
 
-const RUNTIME_SECONDS: u64 = 60;
-
-const OUTPUT_DIR: &'static str = "output/frames";
-
 #[derive(Debug, StructOpt)]
-struct Opt {
+struct Opts {
     #[structopt(long, parse(try_from_str = parse_duration))]
-    runtime: Option<time::Duration>,
+    duration: Option<time::Duration>,
 
     #[structopt(long, parse(from_os_str))]
-    output_path: Option<path::PathBuf>,
+    output_dir: Option<path::PathBuf>,
 }
 
 fn main() {
-    let opts = Opt::from_args();
-    println!("{:?}", opts);
-
-    fs::remove_dir_all(OUTPUT_DIR).unwrap_or_else(|_| println!("Could not remove output dir"));
-    fs::create_dir_all(OUTPUT_DIR).expect("Could not create output dir");
-
     nannou::app(model)
         .update(update)
         .simple_window(view)
@@ -36,7 +26,8 @@ fn main() {
 }
 
 struct Model {
-    runtime: Option<time::Duration>,
+    duration: Option<time::Duration>,
+    output_dir: Option<path::PathBuf>,
 
     // rotation of the object
     // [0, 2PI]
@@ -53,10 +44,18 @@ struct Model {
 }
 
 fn model(app: &App) -> Model {
+    let opts = Opts::from_args();
+
+    if let Some(dir) = &opts.output_dir {
+        fs::remove_dir_all(dir).unwrap_or_else(|_| println!("Could not remove output dir"));
+        fs::create_dir_all(dir).expect("Could not create output dir");
+    }
+
     app.set_loop_mode(LoopMode::rate_fps(60.));
 
     Model {
-        runtime: Some(time::Duration::new(RUNTIME_SECONDS, 0)), // TODO: How do I get a CLI arg here?
+        duration: opts.duration,
+        output_dir: opts.output_dir,
         rot: 0.,
         clones: 0,
         spawn_rate: 1,
@@ -66,8 +65,8 @@ fn model(app: &App) -> Model {
 }
 
 fn update(app: &App, model: &mut Model, update: Update) {
-    if let Some(runtime) = model.runtime {
-        if update.since_start > runtime {
+    if let Some(duration) = model.duration {
+        if update.since_start > duration {
             return app.quit();
         }
     }
@@ -140,16 +139,15 @@ fn view(app: &App, model: &Model, frame: Frame) {
 
     draw.to_frame(app, &frame).unwrap();
 
-    // Capture the frame for stitching together later.
-    let file_path = captured_frame_path(app, &frame);
-    app.main_window().capture_frame(file_path);
+    if let Some(dir) = &model.output_dir {
+        // Capture the frame for stitching together later.
+        let file_path = captured_frame_path(dir, &frame);
+        app.main_window().capture_frame(file_path);
+    }
 }
 
-fn captured_frame_path(app: &App, frame: &Frame) -> std::path::PathBuf {
-    app.project_path()
-        .expect("failed to locate `project_path`")
-        .join(OUTPUT_DIR)
-        // Use the frame number the a filename.
+fn captured_frame_path(dir: &path::PathBuf, frame: &Frame) -> std::path::PathBuf {
+    dir.join("frames")
         .join(frame.nth().to_string())
         .with_extension("png")
 }

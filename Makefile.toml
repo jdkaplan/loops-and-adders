@@ -12,8 +12,8 @@ args = [
     'run',
 	'--release',
 	'--',
-	'--runtime', '30s',
-	'--output-path', 'output/frames',
+	'--duration', '30s',
+	'--output-dir', 'output',
 ]
 
 [tasks.stitch-video]
