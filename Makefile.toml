@@ -1,0 +1,41 @@
+[tasks.watch]
+command = 'cargo'
+args = ['run']
+watch = true
+
+[tasks.video]
+dependencies = ['build-frames', 'stitch-video']
+
+[tasks.build-frames]
+command = 'cargo'
+args = [
+    'run',
+	'--release',
+	'--',
+	'--runtime', '30s',
+	'--output-path', 'output/frames',
+]
+
+[tasks.stitch-video]
+command = 'ffmpeg'
+args = [
+        # Pre-confirm overwriting output files
+		'-y',
+		# Frame rate = 60 fps
+		'-r', '60',
+		# Build the video from a list of image files
+		'-f', 'image2',
+		# The file name pattern for image2
+		'-i', 'output/frames/%d.png',
+		'output/video.mp4',
+]
+install_script = """
+if ! command -v ffmpeg > /dev/null; then
+	cat <<EOF
+
+Couldn't find ffmpeg.  Is it installed?
+
+EOF
+	exit 1
+fi
+"""

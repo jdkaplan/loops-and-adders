@@ -4,6 +4,9 @@
 # Stored output (frame images, video)
 /output
 
+# Cargo-installed binaries
+/.cargo
+
 # Added by cargo
 
 /target
