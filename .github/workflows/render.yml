@@ -20,8 +20,7 @@ jobs:
         with:
           toolchain: stable
 
-      - name: Set up cargo cache
-        uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v1
 
       - name: Install cargo-make
         uses: davidB/rust-cargo-make@v1
