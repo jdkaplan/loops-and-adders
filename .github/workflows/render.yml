@@ -1,0 +1,39 @@
+name: Render
+
+on:
+  pull_request:
+
+jobs:
+  render-video:
+    name: Render Video
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+
+      - name: Install missing libraries
+        run: sudo apt-get install libxcb-shape0-dev libxcb-composite0-dev
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - uses: Swatinem/rust-cache@v1
+
+      - name: Install cargo-make
+        uses: davidB/rust-cargo-make@v1
+        with:
+          version: '0.32.14'
+
+      - name: Generate the video
+        run: cargo make video
+
+      - name: Upload the video
+        uses: actions/upload-artifact@v2
+        with:
+          name: video
+          path: output/video.mp4
+
+      # TODO: Link to the video in a PR comment
